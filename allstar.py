@@ -60,6 +60,26 @@ class AllstarRepo(object):
     def package_list(self):
         return list(self.packages.keys())
 
+
+    # Similar to package_binaries except that this only checks for the
+    # existence of binaries by downloading the headers rather than the entire binaries
+    # Returns a list of booleans where len(list) is the number of binaries found
+    def package_binaries_exist(self, pkg):
+        binaries = []
+        index = self._package_index(pkg)
+
+        for i in range(0, len(index['binaries'])):
+            f = index['binaries'][i]['file']
+            binary_url = urljoin(self.base_url,
+                                 '/repo/p{}/{}/{}/{}'.format(self._package_part(pkg),
+                                                             self.arch, pkg, f))
+            r = self.rsession.head(binary_url)
+            if r:
+                binaries.append(True)
+            else:
+                binaries.append(False)
+        return binaries
+
     def package_binaries(self, pkg):
         binaries = []
         index = self._package_index(pkg)
