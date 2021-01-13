@@ -18,6 +18,7 @@
 
 import requests
 from urllib.parse import urljoin
+import json
 
 #class for interacting with ALLSTAR repository
 #can use alternate URL if you have cloned ALLSTAR locally
@@ -55,11 +56,31 @@ class AllstarRepo(object):
         pkg_url = urljoin(self.base_url, '/repo/p{}/{}/{}/'.format(self._package_part(pkg),
                                                                    self.arch, pkg))
         index_url = urljoin(pkg_url, 'index.json')
-        return self.rsession.get(index_url).json()
+        return self.rsession.get(index_url).json(strict=False)
 
     def package_list(self):
         return list(self.packages.keys())
 
+
+    def package_source_code(self, pkg):
+        sources = []
+        index = self._package_index(pkg)
+
+        for i in range(0, len(index['binaries'])):
+            pieces = []
+            for j in range(0, len(index['binaries'][i]['units'])):
+                u = index['binaries'][i]['units'][j]
+                if 'source' in u:
+                    sf = index['binaries'][i]['units'][j]['source'][2:]
+                    source_url = urljoin(self.base_url, 
+                                        '/repo/p{}/{}/{}/{}'.format(self._package_part(pkg),
+                                                             self.arch, pkg, sf))
+                    r = self.rsession.get(source_url)
+                    pieces.append({'name': index['binaries'][i]['units'][j]['source'],
+                                'content': r.content})
+            sources.append({'name': index['binaries'][i]['name'],
+                                'sources': pieces})
+        return sources
 
     # Similar to package_binaries except that this only checks for the
     # existence of binaries by downloading the headers rather than the entire binaries
@@ -89,11 +110,34 @@ class AllstarRepo(object):
             binary_url = urljoin(self.base_url,
                                  '/repo/p{}/{}/{}/{}'.format(self._package_part(pkg),
                                                              self.arch, pkg, f))
+            #print(binary_url)
             r = self.rsession.get(binary_url)
             binaries.append({'name': index['binaries'][i]['name'],
                              'content': r.content})
 
         return binaries
+
+    def download_arm_binaries(self,pkg):
+        binaries = []
+        index = self._package_index(pkg)
+
+        # if index["arch"] != "arm":
+        #     print(index["package"], index["arch"])
+        #     return binaries
+        print(index["arch"])
+        return []
+
+        for i in range(0, len(index['binaries'])):
+            f = index['binaries'][i]['file']
+            binary_url = urljoin(self.base_url,
+                                 '/repo/p{}/{}/{}/{}'.format(self._package_part(pkg),
+                                                             self.arch, pkg, f))
+            r = self.rsession.head(binary_url)
+            binaries.append({'name': index['binaries'][i]['name'],
+                             'content': r.content})
+        return binaries
+
+
 
     def package_gimples(self, pkg):
         gimples = []
