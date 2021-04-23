@@ -1,5 +1,5 @@
 ##############################################################################################
-# Copyright 2020 The Johns Hopkins University Applied Physics Laboratory LLC
+# Copyright 2021 The Johns Hopkins University Applied Physics Laboratory LLC
 # All rights reserved.
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this 
 # software and associated documentation files (the "Software"), to deal in the Software 
@@ -35,8 +35,9 @@ class Repo(object):
 
     Example:
        r = Repo('amd64')
-       for pkg in r.package_list():
-           for binary in r.package_binaries(pkg):
+       for pkg in r.packages():
+           pobj = r.package(pkg)
+           for binary in pobj.get_binaries():
                process(binary)
     """
 
