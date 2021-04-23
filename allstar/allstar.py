@@ -105,8 +105,7 @@ class Package(object):
         self.binaries = self.index['binaries']
 
     def _fix_index(self, index):
-        """Deal with buggy json generation from ALLSTAR
-        where having multiple "manual" entries was improperly handled.
+        """Deal with buggy json from ALLSTAR
         Have to change multiple "manual" entries to a json list
         """
         index_offset = 0

@@ -1,0 +1,2 @@
+class AllstarPackageError(Exception):
+    pass
